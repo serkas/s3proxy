@@ -1122,7 +1122,6 @@ public class S3ProxyHandler {
         if (blobStore.containerExists(container))
         for (StorageMetadata buckets: blobStore.list()) {
             if (buckets.getName().equals(container)) {
-                logger.debug("metadata: {} {}",  buckets.getName(), buckets.getLocation());
                 location = buckets.getLocation();
                 break;
             }
@@ -1133,9 +1132,7 @@ public class S3ProxyHandler {
             XMLStreamWriter xml = xmlOutputFactory.createXMLStreamWriter(
                     writer);
             xml.writeStartDocument();
-            // TODO: using us-standard semantics but could emit actual location
             xml.writeStartElement("LocationConstraint");
-
             xml.writeDefaultNamespace(AWS_XMLNS);
 
             if (location != null) {

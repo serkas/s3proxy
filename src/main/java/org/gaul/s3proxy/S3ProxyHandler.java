@@ -649,7 +649,7 @@ public class S3ProxyHandler {
                     handleGetContainerAcl(response, blobStore, path[1]);
                     return;
                 } else if ("".equals(request.getParameter("location"))) {
-                    handleContainerLocation(response);
+                    handleContainerLocation(response, blobStore, path[1]);
                     return;
                 } else if ("".equals(request.getParameter("uploads"))) {
                     handleListMultipartUploads(request, response, blobStore,
@@ -1113,9 +1113,21 @@ public class S3ProxyHandler {
         }
     }
 
-    private void handleContainerLocation(HttpServletResponse response)
+    private void handleContainerLocation(HttpServletResponse response, BlobStore blobStore, String container)
             throws IOException {
         response.setCharacterEncoding(UTF_8);
+
+        Location location = null;
+
+        if (blobStore.containerExists(container))
+        for (StorageMetadata buckets: blobStore.list()) {
+            if (buckets.getName().equals(container)) {
+                logger.debug("metadata: {} {}",  buckets.getName(), buckets.getLocation());
+                location = buckets.getLocation();
+                break;
+            }
+        }
+
         try (Writer writer = response.getWriter()) {
             response.setContentType(XML_CONTENT_TYPE);
             XMLStreamWriter xml = xmlOutputFactory.createXMLStreamWriter(
@@ -1123,7 +1135,13 @@ public class S3ProxyHandler {
             xml.writeStartDocument();
             // TODO: using us-standard semantics but could emit actual location
             xml.writeStartElement("LocationConstraint");
+
             xml.writeDefaultNamespace(AWS_XMLNS);
+
+            if (location != null) {
+                xml.writeCData(location.getId());
+            }
+
             xml.writeEndElement();
             xml.flush();
         } catch (XMLStreamException xse) {

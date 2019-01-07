@@ -1136,7 +1136,7 @@ public class S3ProxyHandler {
             xml.writeDefaultNamespace(AWS_XMLNS);
 
             if (location != null) {
-                xml.writeCData(location.getId());
+                xml.writeCharacters(location.getId());
             }
 
             xml.writeEndElement();
